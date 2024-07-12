@@ -11,9 +11,12 @@ import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_stat
 import 'package:polygonid_flutter_sdk_example/utils/custom_strings.dart';
 import 'package:polygonid_flutter_sdk_example/utils/secure_storage_keys.dart';
 import 'package:polygonid_flutter_sdk/common/domain/domain_logger.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final PolygonIdSdk _polygonIdSdk;
+  final LocalAuthentication auth = LocalAuthentication();
 
   HomeBloc(this._polygonIdSdk) : super(const HomeState.initial()) {
     on<CreateIdentityHomeEvent>(_createIdentity);
@@ -48,8 +51,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _createIdentity(
       CreateIdentityHomeEvent event, Emitter<HomeState> emit) async {
     emit(const HomeState.loading());
+    final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+    final bool canAuthenticate =
+        canAuthenticateWithBiometrics || await auth.isDeviceSupported();
 
     try {
+      // TODO: verify face id
+      final bool didAuthenticate = await auth.authenticate(
+          localizedReason: 'Please authenticate to show account balance',
+          options: const AuthenticationOptions(biometricOnly: true));
       PrivateIdentityEntity identity =
           await _polygonIdSdk.identity.addIdentity();
       logger().i("identity: ${identity.privateKey}");

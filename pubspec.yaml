@@ -50,6 +50,7 @@ dependencies:
   image_picker: ^1.0.0
   envied: ^0.3.0+3
   scan: ^1.6.0
+  local_auth: ^2.2.0
 
 dev_dependencies:
   integration_test:
