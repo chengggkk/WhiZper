@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
+import 'package:polygonid_flutter_sdk/common/domain/entities/chain_config_entity.dart';
 import 'package:polygonid_flutter_sdk/common/domain/entities/env_entity.dart';
 import 'package:polygonid_flutter_sdk/iden3comm/data/mappers/iden3_message_type_mapper.dart';
 import 'package:polygonid_flutter_sdk/sdk/polygon_id_sdk.dart';
@@ -44,7 +45,23 @@ void registerEnv() {
   String pinataGateway = Env.pinataGateway;
   String pinataGatewayToken = Env.pinataGatewayToken;
 
-  EnvEntity envV1 = EnvEntity.fromJson(defaultEnv);
+  // EnvEntity envV1 = EnvEntity.fromJson(defaultEnv);
+
+  EnvEntity envV1 = EnvEntity(
+    pushUrl: 'https://push-staging.polygonid.com/api/v1',
+    ipfsUrl:
+        "https://f5097d7ff5a142d3b59dfcb26a27ebc6:b96f2564a15d490180d0cc5537b5fc26@ipfs.infura.io:5001",
+    chainConfigs: {
+      "80002": ChainConfigEntity(
+        blockchain: 'polygon',
+        network: 'amoy',
+        rpcUrl:
+            'https://polygon-amoy.infura.io/v3/f5097d7ff5a142d3b59dfcb26a27ebc6',
+        stateContractAddr: '0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124',
+      )
+    },
+    didMethods: [],
+  );
   if (stacktraceEncryptionKey.isNotEmpty) {
     envV1 = envV1.copyWith(stacktraceEncryptionKey: stacktraceEncryptionKey);
   }
@@ -62,7 +79,25 @@ void registerEnv() {
 
 ///
 Future<void> registerProviders() async {
-  await PolygonIdSdk.init(env: getIt<EnvEntity>());
+  // await PolygonIdSdk.init(env: getIt<EnvEntity>());
+
+  await PolygonIdSdk.init(
+    env: EnvEntity(
+      pushUrl: 'https://push-staging.polygonid.com/api/v1',
+      ipfsUrl:
+          "https://f5097d7ff5a142d3b59dfcb26a27ebc6:b96f2564a15d490180d0cc5537b5fc26@ipfs.infura.io:5001",
+      chainConfigs: {
+        "80002": ChainConfigEntity(
+          blockchain: 'polygon',
+          network: 'amoy',
+          rpcUrl:
+              'https://polygon-amoy.infura.io/v3/f5097d7ff5a142d3b59dfcb26a27ebc6',
+          stateContractAddr: '0x1a4cC30f2aA0377b0c3bc9848766D90cb4404124',
+        )
+      },
+      didMethods: [],
+    ),
+  );
   getIt.registerLazySingleton<PolygonIdSdk>(() => PolygonIdSdk.I);
 }
 
