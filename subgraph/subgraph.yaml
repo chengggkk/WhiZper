@@ -1,0 +1,29 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: WhiZper
+    network: sepolia
+    source:
+      address: "0xDce69DC9a55B79C84022BA5402496F64A12FE4dB"
+      abi: WhiZper
+      startBlock: 6298686
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Group
+        - Message
+      abis:
+        - name: WhiZper
+          file: ./abis/WhiZper.json
+      eventHandlers:
+        - event: Group(indexed uint256,indexed uint256,string)
+          handler: handleGroup
+        - event: Message(indexed uint256,indexed uint256,string)
+          handler: handleMessage
+      file: ./src/whi-zper.ts

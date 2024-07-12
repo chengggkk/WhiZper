@@ -1,0 +1,19 @@
+type Group @entity(immutable: true) {
+  id: Bytes!
+  groupId: BigInt! # uint256
+  userId: BigInt! # uint256
+  groupName: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Message @entity(immutable: true) {
+  id: Bytes!
+  groupId: BigInt! # uint256
+  userId: BigInt! # uint256
+  message: String! # string
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
