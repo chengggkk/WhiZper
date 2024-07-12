@@ -51,6 +51,8 @@ dependencies:
   envied: ^0.3.0+3
   scan: ^1.6.0
   local_auth: ^2.2.0
+  web3dart: ^2.6.1
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   integration_test:
@@ -83,6 +85,7 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - .env
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
