@@ -1,0 +1,8 @@
+{
+  "sepolia": {
+    "WhiZper": {
+      "address": "0xDce69DC9a55B79C84022BA5402496F64A12FE4dB",
+      "startBlock": 6298686
+    }
+  }
+}
