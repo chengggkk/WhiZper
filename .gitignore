@@ -50,3 +50,6 @@ env.g.dart
 
 # Generated
 *.freezed.dart
+
+# env
+.env
