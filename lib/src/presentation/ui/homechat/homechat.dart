@@ -15,12 +15,41 @@ class HomeChat extends StatefulWidget {
 class _HomeChatState extends State<HomeChat> {
 
 
+  String? _polygonId;
+
+
+  @override
+  void initState() {
+    _loadIdentity();
+    super.initState();
+  }
+
+  Future<void> _loadIdentity() async {
+    try {
+      _polygonId = await SecureStorage.read(
+          key: 'privateKey'); // Replace with your key name
+      setState(() {});
+    } catch (e) {
+      print('Error loading private key: $e');
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-                title: const Text('Whizper')
+                title: const Text('WhiZper'),
+                actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () async {
+              Navigator.pushNamed(context, Routes.addAndJoinPath);
+            },
+          ),
+        ],
         ),
     );
   }

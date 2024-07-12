@@ -11,7 +11,7 @@ import 'package:polygonid_flutter_sdk_example/src/presentation/ui/restore_identi
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/sign/widgets/sign.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/splash/widgets/splash.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/homechat/homechat.dart';
-
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/addandjoin/addandjoin.dart';
 
 class Routes {
   static const String initialPath = "/";
@@ -27,6 +27,7 @@ class Routes {
   static const String backupIdentityPath = "/backup_identity";
   static const String restoreIdentityPath = "/restore_identity";
   static const String homeChatPath = "/homechat";
+  static const String addAndJoinPath = "/addandjoin";
 
 
   ///
@@ -44,6 +45,7 @@ class Routes {
       backupIdentityPath: _backupIdentityRoute(),
       restoreIdentityPath: _restoreIdentityRoute(),
       homeChatPath: _homeChatRoute(),
+      addAndJoinPath: _addAndJoinRoute(),
     };
   }
 
@@ -103,5 +105,10 @@ class Routes {
   ///
   static WidgetBuilder _homeChatRoute() {
     return (BuildContext context) => const HomeChat();
+  }
+
+  ///
+  static WidgetBuilder _addAndJoinRoute() {
+    return (BuildContext context) => AddAndJoin();
   }
 }
