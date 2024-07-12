@@ -10,6 +10,8 @@ import 'package:polygonid_flutter_sdk_example/src/presentation/ui/qrcode_scanner
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/restore_identity/widgets/restore_identity.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/sign/widgets/sign.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/splash/widgets/splash.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/homechat/homechat.dart';
+
 
 class Routes {
   static const String initialPath = "/";
@@ -24,6 +26,8 @@ class Routes {
   static const String checkIdentityValidityPath = "/check_identity_validity";
   static const String backupIdentityPath = "/backup_identity";
   static const String restoreIdentityPath = "/restore_identity";
+  static const String homeChatPath = "/homechat";
+
 
   ///
   static Map<String, WidgetBuilder> getRoutes(context) {
@@ -39,6 +43,7 @@ class Routes {
       checkIdentityValidityPath: _checkIdentityValidityRoute(),
       backupIdentityPath: _backupIdentityRoute(),
       restoreIdentityPath: _restoreIdentityRoute(),
+      homeChatPath: _homeChatRoute(),
     };
   }
 
@@ -93,5 +98,10 @@ class Routes {
   ///
   static WidgetBuilder _restoreIdentityRoute() {
     return (BuildContext context) => const RestoreIdentityScreen();
+  }
+
+  ///
+  static WidgetBuilder _homeChatRoute() {
+    return (BuildContext context) => const HomeChat();
   }
 }
