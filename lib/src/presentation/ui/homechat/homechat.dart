@@ -125,78 +125,98 @@ class _HomeChatState extends State<HomeChat> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('WhiZper'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () async {
-              Navigator.pushNamed(context, Routes.addAndJoinPath);
-            },
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: const Text('WhiZper'),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () async {
+            Navigator.pushNamed(context, Routes.addAndJoinPath);
+          },
+        ),
+      ],
+    ),
+    body: Stack(
+      children: [
+        // Background image
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg.png'),
+              fit: BoxFit.cover,
+            ),
           ),
-        ],
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(_isLoading ? 'Loading...' : ''),
-          Expanded(
-            child: _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Error: $_errorMessage'),
-                          SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: _loadUserGroups,
-                            child: Text('Retry'),
-                          ),
-                        ],
-                      )
-                    : userGroups.isEmpty
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('No groups found.'),
-                              SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  await _loadIdentity();
-                                  await _loadUserGroups();
-                                },
-                                child: Text('Search Groups'),
-                              ),
-                            ],
-                          )
-                        : ListView.separated(
-                            itemCount: _groups.length,
-                            separatorBuilder: (context, index) => Divider(),
-                            itemBuilder: (context, index) {
-                              final group = _groups[index];
-                              return ListTile(
-                                title: Center(child: Text(group["groupName"]!)),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routes.chatPath,
-                                    arguments: Chat_arg(
-                                      userId: group["userId"]!,
-                                      groupId: group["groupId"]!,
-                                      groupName: group["groupName"] ??
-                                          "Default Group Name",
+        ),
+        // Main content
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_isLoading ? 'Loading...' : ''),
+            Expanded(
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _errorMessage != null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Error: $_errorMessage'),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: _loadUserGroups,
+                              child: Text('Retry'),
+                            ),
+                          ],
+                        )
+                      : userGroups.isEmpty
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('No groups found.'),
+                                SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await _loadIdentity();
+                                    await _loadUserGroups();
+                                  },
+                                  child: Text('Search Groups'),
+                                ),
+                              ],
+                            )
+                          : ListView.separated(
+                              itemCount: _groups.length,
+                              separatorBuilder: (context, index) => Divider(),
+                              itemBuilder: (context, index) {
+                                final group = _groups[index];
+                                return InkWell(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routes.chatPath,
+                                      arguments: Chat_arg(
+                                        userId: group["userId"]!,
+                                        groupId: group["groupId"]!,
+                                        groupName: group["groupName"] ?? "Default Group Name",
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
                                     ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-          ),
-        ],
-      ),
-    );
-  }
+                                    child: ListTile(
+                                      title: Center(child: Text(group["groupName"]!)),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 }
