@@ -300,89 +300,97 @@ class _HomeChatState extends State<HomeChat> {
     }
   }
 
-Widget _buildAddGroupForm() {
-  return Padding(
-    padding: EdgeInsets.all(50.0),
-    child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Create Group Form
-          Form(
-            key: _addGroupFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Create Group',
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Group Name'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a group name';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _addGroupName = value!;
-                  },
-                ),
-                SizedBox(height: 8.0),
-                ElevatedButton(
-                  child: Text('Create Group'),
-                  onPressed: _isLoading ? null : _submitAddGroupForm,
-                ),
-              ],
+  Widget _buildAddGroupForm() {
+    return Padding(
+      padding: EdgeInsets.all(50.0),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Create Group Form
+            Form(
+              key: _addGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Group Name'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group name';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _addGroupName = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Create Group'),
+                    onPressed: _isLoading ? null : _submitAddGroupForm,
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 20.0), // Spacer between forms
-          // Join Group Form
-          Form(
-            key: _joinGroupFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Join Group',
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                ),
-                TextFormField(
-                  controller: _groupIdController,
-                  decoration: InputDecoration(labelText: 'Group ID'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a group ID';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _joinGroupId = value!;
-                  },
-                ),
-                SizedBox(height: 8.0),
-                ElevatedButton(
-                  child: Text('Join Group'),
-                  onPressed: _isLoading ? null : _submitJoinGroupForm,
-                ),
-              ],
+            SizedBox(height: 20.0), // Spacer between forms
+            // Join Group Form
+            Form(
+              key: _joinGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Join Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    controller: _groupIdController,
+                    decoration: InputDecoration(labelText: 'Group ID'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group ID';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _joinGroupId = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Join Group'),
+                    onPressed: _isLoading ? null : _submitJoinGroupForm,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('WhiZper'),
+        title: Text('WhiZper $_polygonId'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await SecureStorage.delete(key: 'privateKey');
+              Navigator.pushNamed(context, Routes.homePath);
+            },
+          ),
           IconButton(
             icon: Icon(Icons.qr_code_scanner),
             onPressed: () {
