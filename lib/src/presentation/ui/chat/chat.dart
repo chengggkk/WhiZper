@@ -5,6 +5,7 @@ import 'package:polygonid_flutter_sdk_example/src/data/secure_storage.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/chat/chat_arg.dart';
 import 'package:web3dart/web3dart.dart';
 import 'package:http/http.dart';
+import 'dart:convert';
 
 class Chat extends StatefulWidget {
   final Chat_arg chatArguments;
@@ -39,7 +40,7 @@ class _ChatState extends State<Chat> {
     userId = widget.chatArguments.userId;
     bigIntGroupId = BigInt.parse(groupId, radix: 16);
     bigIntUserId = BigInt.parse(userId);
-      }
+  }
 
   Future<void> _initializeWeb3() async {
     try {
@@ -81,6 +82,27 @@ class _ChatState extends State<Chat> {
     );
   }
 
+  Future<Map<String, dynamic>> request(String query) async {
+    final url = Uri.parse(
+        'https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.1');
+
+    final response = await post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'query': query,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
   Future<void> _loadMessages() async {
     try {
       await _loadIdentity();
@@ -91,19 +113,14 @@ class _ChatState extends State<Chat> {
       final contract = await loadContract();
       final messageEvent = contract.event("Message");
 
-      final filter = FilterOptions.events(
-        contract: contract,
-        event: messageEvent,
-        fromBlock: const BlockNum.exact(6299058),
-        toBlock: const BlockNum.current(),
-      );
-      final logs = await ethClient.getLogs(filter);
+      final response = await request("{messages(where: { groupId: $groupId }){userId groupId message}}");
+
+      final logs = response['data']['messages'];
 
       for (var log in logs) {
-        final decoded = messageEvent.decodeResults(log.topics!, log.data!);
-        String groupId = decoded[0].toString();
-        String message = decoded[2].toString();
-        String userId = decoded[1].toString();
+        String groupId = log["groupId"];
+        String message = log["message"];
+        String userId = log["userId"];
 
         BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
         // if (userId == polygonIdBigInt.toString()) {
@@ -181,7 +198,9 @@ class _ChatState extends State<Chat> {
                                 margin: EdgeInsets.symmetric(
                                     vertical: 5.0, horizontal: 8.0),
                                 decoration: BoxDecoration(
-                                  color: isUserMessage ? Colors.blue : Colors.white,
+                                  color: isUserMessage
+                                      ? Colors.blue
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 child: Text(
@@ -205,6 +224,7 @@ class _ChatState extends State<Chat> {
             ),
     );
   }
+
   Widget _buildAddMessageForm() {
     return Padding(
       padding: const EdgeInsets.all(8.0),

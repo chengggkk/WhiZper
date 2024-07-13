@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -15,17 +17,12 @@ class HomeChat extends StatefulWidget {
 }
 
 class _HomeChatState extends State<HomeChat> {
-
   List<Map<String, String>> _groups = [];
-
 
   bool _isLoading = false;
   String? _errorMessage;
   List<Map<String, String>> userGroups = [];
   String? _polygonId;
-
-
-
 
   @override
   void initState() {
@@ -44,8 +41,7 @@ class _HomeChatState extends State<HomeChat> {
     }
   }
 
-
-    Future<DeployedContract> loadContract() async {
+  Future<DeployedContract> loadContract() async {
     String abi = await rootBundle.loadString('assets/abi.json');
     await dotenv.load(fileName: ".env");
     String contractAddress = dotenv.env['CONTRACT_ADDRESS']!;
@@ -58,50 +54,58 @@ class _HomeChatState extends State<HomeChat> {
     return contract;
   }
 
+  Future<Map<String, dynamic>> request(String query) async {
+    final url = Uri.parse(
+        'https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.1');
 
-    Future<void> _loadUserGroups() async {
+    final response = await post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'query': query,
+      }),
+    );
 
-          setState(() {
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<void> _loadUserGroups() async {
+    setState(() {
       _isLoading = true;
       _errorMessage = null;
       _groups.clear(); // Clear existing groups to avoid duplication
     });
 
-
-      try {
+    try {
       await _loadIdentity();
       if (_polygonId == null) {
         throw Exception('Private key is null');
       }
-      await dotenv.load(fileName: ".env");
-      String apiUrl = dotenv.env['PROVIDER']!;
-      var httpClient = Client();
-      var ethClient = Web3Client(apiUrl, httpClient);
-      final contract = await loadContract();
-      final groupEvent = contract.event("Group");
-
-      final filter = FilterOptions.events(
-        contract: contract,
-        event: groupEvent,
-        fromBlock: const BlockNum.exact(6299058),
-        toBlock: const BlockNum.current(),
-      );
-final logs = await ethClient.getLogs(filter);
 
       userGroups = [];
+      BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
+      final response = await request(
+          "{groups(where:{userId:\"${polygonIdBigInt.toString()}\"}){userId groupId groupName}}");
+      final logs = response['data']['groups'];
 
       for (var log in logs) {
-        final decoded = groupEvent.decodeResults(log.topics!, log.data!);
-        String groupId = decoded[0].toString();
-        String groupName = decoded[2].toString();
-        String userId = decoded[1].toString();
+        String groupId = log["groupId"];
+        String groupName = log["groupName"];
+        String userId = log["userId"];
 
         BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
         if (userId == polygonIdBigInt.toString()) {
           userGroups.add({
             "userId": userId,
             "groupId": groupId,
-            "groupName": groupName, // Replace with actual group name retrieval logic
+            "groupName":
+                groupName, // Replace with actual group name retrieval logic
           });
         }
       }
@@ -124,8 +128,8 @@ final logs = await ethClient.getLogs(filter);
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-                title: const Text('WhiZper'),
-                actions: [
+        title: const Text('WhiZper'),
+        actions: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
@@ -133,9 +137,8 @@ final logs = await ethClient.getLogs(filter);
             },
           ),
         ],
-        ),
-
-        body: Column(
+      ),
+      body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(_isLoading ? 'Loading...' : ''),
