@@ -136,4 +136,199 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+  ///
+  Widget _buildIdentifierSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            CustomStrings.homeIdentifierSectionPrefix,
+            textAlign: TextAlign.center,
+            style: CustomTextStyles.descriptionTextStyle.copyWith(fontSize: 20),
+          ),
+          BlocBuilder(
+            bloc: _bloc,
+            builder: (BuildContext context, HomeState state) {
+              return Text(
+                state.identifier ??
+                    CustomStrings.homeIdentifierSectionPlaceHolder,
+                key: const Key('identifier'),
+                style: CustomTextStyles.descriptionTextStyle
+                    .copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+              );
+            },
+            buildWhen: (_, currentState) =>
+                currentState is LoadedIdentifierHomeState,
+          ),
+        ],
+      ),
+    );
+  }
+
+  ///
+  Widget _buildErrorSection() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        if (state is! ErrorHomeState) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text(
+            state.message,
+            style: CustomTextStyles.descriptionTextStyle
+                .copyWith(color: CustomColors.redError),
+          ),
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _buildNavigateToNextPageButton() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: BlocBuilder(
+          bloc: _bloc,
+          builder: (BuildContext context, HomeState state) {
+            bool enabled = (state is! LoadingDataHomeState) &&
+                (state.identifier != null && state.identifier!.isNotEmpty);
+            return ButtonNextAction(
+              key: CustomWidgetsKeys.homeScreenButtonNextAction,
+              enabled: enabled,
+              onPressed: () {
+                Navigator.pushNamed(context, Routes.authPath);
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+
+  ///
+  Widget _buildFeaturesSection() {
+    return ListView(
+      shrinkWrap: true,
+      physics: const ClampingScrollPhysics(),
+      children: [
+        _buildSignMessageFeatureCard(),
+        _buildAuthenticateFeatureCard(),
+        _buildCheckIdentityValidityFeatureCard(),
+        _buildBackupIdentityFeatureCard(),
+        _buildRestoreIdentityFeatureCard(),
+      ],
+    );
+  }
+
+  ///
+  Widget _buildSignMessageFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.signMessageMethod,
+          title: CustomStrings.signMessageTitle,
+          description: CustomStrings.signMessageDescription,
+          onTap: () async {
+            Navigator.pushNamed(context, Routes.signMessagePath);
+          },
+          enabled: enabled,
+          disabledReason: CustomStrings.homeFeatureCardDisabledReason,
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _buildAuthenticateFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.authenticateMethod,
+          title: CustomStrings.authenticateTitle,
+          description: CustomStrings.authenticateDescription,
+          onTap: () {
+            Navigator.pushNamed(context, Routes.authPath);
+          },
+          enabled: enabled,
+          disabledReason: CustomStrings.homeFeatureCardDisabledReason,
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _buildCheckIdentityValidityFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.checkIdentityValidityMethod,
+          title: CustomStrings.checkIdentityValidityTitle,
+          description: CustomStrings.checkIdentityValidityDescription,
+          onTap: () {
+            Navigator.pushNamed(context, Routes.checkIdentityValidityPath);
+          },
+          enabled: enabled,
+          disabledReason: CustomStrings.homeFeatureCardDisabledReason,
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _buildBackupIdentityFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.backupIdentityMethod,
+          title: CustomStrings.backupIdentityTitle,
+          description: CustomStrings.backupIdentityDescription,
+          onTap: () {
+            Navigator.pushNamed(context, Routes.backupIdentityPath);
+          },
+          enabled: enabled,
+          disabledReason: CustomStrings.homeFeatureCardDisabledReason,
+        );
+      },
+    );
+  }
+
+  ///
+  Widget _buildRestoreIdentityFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.restoreIdentityMethod,
+          title: CustomStrings.restoreIdentityTitle,
+          description: CustomStrings.restoreIdentityDescription,
+          onTap: () {
+            Navigator.pushNamed(context, Routes.restoreIdentityPath);
+          },
+          enabled: enabled,
+          disabledReason: CustomStrings.homeFeatureCardDisabledReason,
+        );
+      },
+    );
+  }
 }

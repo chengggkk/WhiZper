@@ -31,6 +31,7 @@ class _HomeChatState extends State<HomeChat> {
   void initState() {
     _loadIdentity();
     super.initState();
+    _loadUserGroups();
   }
 
   Future<void> _loadIdentity() async {

@@ -16,6 +16,9 @@ class Chat extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
+  String groupId = '';
+  String userId = '';
+
   String? _polygonId;
   List<Map<String, dynamic>> messages = [];
   TextEditingController _messageController = TextEditingController();
@@ -25,11 +28,18 @@ class _ChatState extends State<Chat> {
   late ContractFunction _getMessages;
   bool _isWeb3Initialized = false;
 
+  late BigInt bigIntGroupId;
+  late BigInt bigIntUserId;
+
   @override
   void initState() {
     super.initState();
     _initializeWeb3();
-  }
+    groupId = widget.chatArguments.groupId;
+    userId = widget.chatArguments.userId;
+    bigIntGroupId = BigInt.parse(groupId, radix: 16);
+    bigIntUserId = BigInt.parse(userId);
+      }
 
   Future<void> _initializeWeb3() async {
     try {
@@ -72,9 +82,7 @@ class _ChatState extends State<Chat> {
   }
 
   Future<void> _loadMessages() async {
-
-
-      try {
+    try {
       await _loadIdentity();
       await dotenv.load(fileName: ".env");
       String apiUrl = dotenv.env['PROVIDER']!;
@@ -89,9 +97,7 @@ class _ChatState extends State<Chat> {
         fromBlock: const BlockNum.exact(6299058),
         toBlock: const BlockNum.current(),
       );
-final logs = await ethClient.getLogs(filter);
-
-      messages = [];
+      final logs = await ethClient.getLogs(filter);
 
       for (var log in logs) {
         final decoded = messageEvent.decodeResults(log.topics!, log.data!);
@@ -100,35 +106,42 @@ final logs = await ethClient.getLogs(filter);
         String userId = decoded[1].toString();
 
         BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
-        if (userId == polygonIdBigInt.toString()) {
-          messages.add({
-            "userId": userId,
-            "groupId": groupId,
-            "message": message, // Replace with actual group name retrieval logic
-          });
-        }
+        // if (userId == polygonIdBigInt.toString()) {
+        messages.add({
+          "userId": userId,
+          "groupId": groupId,
+          "message": message, // Replace with actual group name retrieval logic
+        });
+        // }
       }
     } catch (e) {
       print('Error loading user groups: $e');
     }
   }
+
   Future<void> _sendMessageToContract(String message) async {
     if (_polygonId == null) {
       print('Private key not loaded');
       return;
     }
     try {
-      final credentials = EthPrivateKey.fromHex(_polygonId!);
+      await dotenv.load(fileName: ".env");
+      String apiUrl = dotenv.env['PROVIDER']!;
+      var httpClient = Client();
+      var ethClient = Web3Client(apiUrl, httpClient);
+
+      await dotenv.load(fileName: ".env");
+      String privateKey =
+          dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
+
+      Credentials credentials = EthPrivateKey.fromHex("0x" + privateKey);
+      print('Sending message: $bigIntGroupId, $userId, $message');
       await _client.sendTransaction(
         credentials,
         Transaction.callContract(
           contract: _contract,
           function: _sendMessage,
-          parameters: [
-            BigInt.from(widget.chatArguments.groupId as num),
-            BigInt.from(widget.chatArguments.userId as num),
-            message
-          ],
+          parameters: [bigIntGroupId, bigIntUserId, message],
         ),
         chainId: 11155111,
       );
@@ -150,49 +163,79 @@ final logs = await ethClient.getLogs(filter);
                 Text('User ID: ${widget.chatArguments.userId}'),
                 Text('Group ID: ${widget.chatArguments.groupId}'),
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: messages.length,
-                    separatorBuilder: (context, index) => Divider(),
-                    itemBuilder: (context, index)
-                     {
-                      final message = messages[index];
-                      return ListTile(
-                        title: Text(message["message"]!),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: InputDecoration(
-                            hintText: 'Type your message...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            ),
-                          ),
+                  child: messages.isEmpty
+                      ? Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final message = messages[index];
+                            bool isUserMessage = message["userId"] == userId;
+
+                            return Align(
+                              alignment: isUserMessage
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 15.0),
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 5.0, horizontal: 8.0),
+                                decoration: BoxDecoration(
+                                  color: isUserMessage ? Colors.blue : Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Text(
+                                  message["message"]!,
+                                  style: TextStyle(
+                                    color: isUserMessage
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                      SizedBox(width: 10.0),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _sendMessageToContract(_messageController.text);
-                          _messageController.clear();
-                        },
-                        child: Icon(Icons.send),
-                      ),
-                    ],
-                  ),
                 ),
+                _buildAddMessageForm(),
               ],
             )
           : Center(
               child: CircularProgressIndicator(),
             ),
     );
+  }
+  Widget _buildAddMessageForm() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                hintText: 'Type your message...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          ElevatedButton(
+            onPressed: () async {
+              await _sendMessageToContract(_messageController.text);
+            },
+            child: Icon(Icons.send),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 }

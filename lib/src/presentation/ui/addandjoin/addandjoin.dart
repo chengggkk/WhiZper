@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:polygonid_flutter_sdk_example/src/data/secure_storage.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/dependency_injection/dependencies_provider.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/navigations/routes.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/common/widgets/feature_card.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_bloc.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_state.dart';
+import 'package:polygonid_flutter_sdk_example/utils/custom_strings.dart';
 import 'package:web3dart/web3dart.dart';
 
 class AddAndJoin extends StatefulWidget {
@@ -15,6 +22,9 @@ class _AddAndJoinState extends State<AddAndJoin> {
   final _joinGroupFormKey = GlobalKey<FormState>();
   final _groupIdController = TextEditingController();
 
+  late final HomeBloc _bloc;
+
+
   String _addGroupName = '';
   String? _joinGroupId = '';
   bool _isLoading = false;
@@ -23,6 +33,7 @@ class _AddAndJoinState extends State<AddAndJoin> {
 
   @override
   void initState() {
+    _bloc = getIt<HomeBloc>();
     super.initState();
     _loadIdentity();
   }
@@ -111,6 +122,25 @@ Future<DeployedContract> loadContract() async {
     }
   }
 
+  Widget _buildAuthenticateFeatureCard() {
+    return BlocBuilder(
+      bloc: _bloc,
+      builder: (BuildContext context, HomeState state) {
+        bool enabled = (state is! LoadingDataHomeState) &&
+            (state.identifier != null && state.identifier!.isNotEmpty);
+        return FeatureCard(
+          methodName: CustomStrings.authenticateMethod,
+          title: CustomStrings.authenticateTitle,
+          description: CustomStrings.authenticateDescription,
+          onTap: () {
+            Navigator.pushNamed(context, Routes.authPath);
+          },
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +156,8 @@ Future<DeployedContract> loadContract() async {
                   children: [
                     _buildAddGroupForm(),
                     SizedBox(height: 16.0),
+                    _buildAuthenticateFeatureCard(),
+                    
                   ],
                 ),
               ),
