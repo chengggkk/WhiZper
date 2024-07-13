@@ -245,8 +245,6 @@ class _ChatState extends State<Chat> {
       body: _isWeb3Initialized
           ? Column(
               children: <Widget>[
-                Text('User ID: ${widget.chatArguments.userId}'),
-                Text('Group ID: ${widget.chatArguments.groupId}'),
                 Expanded(
                   child: _isMessageLoading
                       ? Center(child: CircularProgressIndicator())
@@ -313,6 +311,7 @@ class _ChatState extends State<Chat> {
           ElevatedButton(
             onPressed: () async {
               await _sendMessageToContract(_messageController.text);
+              _messageController.clear();
             },
             child: Icon(Icons.send),
           ),

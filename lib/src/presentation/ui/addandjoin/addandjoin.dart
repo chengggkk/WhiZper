@@ -175,6 +175,7 @@ class _AddAndJoinState extends State<AddAndJoin> {
     }
   }
 
+
   Widget _buildAuthenticateFeatureCard() {
     return BlocBuilder(
       bloc: _bloc,

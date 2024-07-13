@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:polygonid_flutter_sdk_example/src/data/secure_storage.dart';
@@ -179,14 +180,11 @@ class _HomeChatState extends State<HomeChat> {
         '4563515138436312174368382548605579502301781805108297754551533822937265670041')
   ];
 
-
   @override
   void dispose() {
     _groupIdController.dispose();
     super.dispose();
   }
-
-
 
   Future<void> _createGroup(polygonId, String groupName) async {
     try {
@@ -245,149 +243,255 @@ class _HomeChatState extends State<HomeChat> {
     }
   }
 
+  Future<void> _joinGroup(String groupId) async {
+    try {
+      setState(() => _isLoading = true);
+      await dotenv.load(fileName: ".env");
+      String apiUrl = dotenv.env['PROVIDER']!;
+      var httpClient = Client();
+      var ethClient = Web3Client(apiUrl, httpClient);
 
-Widget _buildAddGroupForm() {
-    return Form(
-      key: _addGroupFormKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Add Group',
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          ),
-          TextFormField(
-            decoration: InputDecoration(labelText: 'Group Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a group name';
-              }
-              return null;
-            },
-            onSaved: (value) {
-              _addGroupName = value!;
-            },
-          ),
-          SizedBox(height: 8.0),
-          ElevatedButton(
-            child: Text('Add Group'),
-            onPressed: _isLoading ? null : _submitAddGroupForm,
-          ),
-        ],
+      await dotenv.load(fileName: ".env");
+      String privateKey =
+          dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
+
+      Credentials credentials = EthPrivateKey.fromHex("0x" + privateKey);
+      final contract = await loadContract();
+      final function = contract.function('joinGroup');
+
+      BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
+      polygonIDB = polygonIdBigInt;
+
+      await ethClient.sendTransaction(
+        credentials,
+        Transaction.callContract(
+          contract: contract,
+          function: function,
+          parameters: [
+            requestId,
+            inputs,
+            a,
+            b,
+            c,
+            polygonIdBigInt,
+            BigInt.parse(groupId)
+          ], // Ensure this matches the smart contract's expected types
+        ),
+        chainId: 11155111,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Joined group: $groupId')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to join group: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _submitJoinGroupForm() async {
+    if (_joinGroupFormKey.currentState!.validate()) {
+      _joinGroupFormKey.currentState!.save();
+      await _joinGroup(_joinGroupId!);
+      _joinGroupFormKey.currentState!.reset();
+    }
+  }
+
+  Widget _buildAddGroupForm() {
+    return Padding(
+      padding: EdgeInsets.all(50.0),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Create Group Form
+            Form(
+              key: _addGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Group Name'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group name';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _addGroupName = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Create Group'),
+                    onPressed: _isLoading ? null : _submitAddGroupForm,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.0), // Spacer between forms
+            // Join Group Form
+            Form(
+              key: _joinGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Join Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    controller: _groupIdController,
+                    decoration: InputDecoration(labelText: 'Group ID'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group ID';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _joinGroupId = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Join Group'),
+                    onPressed: _isLoading ? null : _submitJoinGroupForm,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: const Text('WhiZper'),
-      actions: [
-
-        IconButton(
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('WhiZper $_polygonId'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await SecureStorage.delete(key: 'privateKey');
+              Navigator.pushNamed(context, Routes.homePath);
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.qr_code_scanner),
             onPressed: () {
               // Implement QR code scan functionality here
               // For example: widget._bloc.add(const AuthEvent.clickScanQrCode());
             },
           ),
-        IconButton(
-          icon: Icon(Icons.add),
+          IconButton(
+            icon: Icon(Icons.add),
             onPressed: () async {
-            await showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) {
-              return Padding(
-                padding: EdgeInsets.all(50.0),
-                child: _buildAddGroupForm(),
+              await showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return _buildAddGroupForm();
+                },
               );
-              },
-            );
             },
-        ),
-      ],
-    ),
-    body: Stack(
-      children: [
-        // Background image
-        Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/bg.png'),
-              fit: BoxFit.cover,
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Background image
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bg.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
-        // Main content
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_isLoading ? 'Loading...' : ''),
-            Expanded(
-              child: _isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : _errorMessage != null
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('Error: $_errorMessage'),
-                            SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: _loadUserGroups,
-                              child: Text('Retry'),
-                            ),
-                          ],
-                        )
-                      : userGroups.isEmpty
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text('No groups found.'),
-                                SizedBox(height: 20),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    await _loadIdentity();
-                                    await _loadUserGroups();
-                                  },
-                                  child: Text('Search Groups'),
-                                ),
-                              ],
-                            )
-                          : ListView.separated(
-                              itemCount: _groups.length,
-                              separatorBuilder: (context, index) => Divider(),
-                              itemBuilder: (context, index) {
-                                final group = _groups[index];
-                                return InkWell(
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      Routes.chatPath,
-                                      arguments: Chat_arg(
-                                        userId: group["userId"]!,
-                                        groupId: group["groupId"]!,
-                                        groupName: group["groupName"] ?? "Default Group Name",
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                    ),
-                                    child: ListTile(
-                                      title: Center(child: Text(group["groupName"]!)),
-                                    ),
+          // Main content
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_isLoading ? 'Loading...' : ''),
+              Expanded(
+                child: _isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Error: $_errorMessage'),
+                              SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: _loadUserGroups,
+                                child: Text('Retry'),
+                              ),
+                            ],
+                          )
+                        : userGroups.isEmpty
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('No groups found.'),
+                                  SizedBox(height: 20),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      await _loadIdentity();
+                                      await _loadUserGroups();
+                                    },
+                                    child: Text('Search Groups'),
                                   ),
-                                );
-                              },
-                            ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+                                ],
+                              )
+                            : ListView.separated(
+                                itemCount: _groups.length,
+                                separatorBuilder: (context, index) => Divider(),
+                                itemBuilder: (context, index) {
+                                  final group = _groups[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routes.chatPath,
+                                        arguments: Chat_arg(
+                                          userId: group["userId"]!,
+                                          groupId: group["groupId"]!,
+                                          groupName: group["groupName"] ??
+                                              "Default Group Name",
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child: ListTile(
+                                        title: Center(
+                                            child: Text(group["groupName"]!)),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
