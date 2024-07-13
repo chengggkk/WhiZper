@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:polygonid_flutter_sdk/common/libs/polygonidcore/pidcore_base.dart';
-import 'package:polygonid_flutter_sdk/sdk/polygon_id_sdk.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/dependency_injection/dependencies_provider.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/navigations/routes.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/common/widgets/button_next_action.dart';
@@ -11,7 +8,6 @@ import 'package:polygonid_flutter_sdk_example/src/presentation/ui/common/widgets
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_bloc.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_event.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/home/home_state.dart';
-import 'package:polygonid_flutter_sdk_example/src/presentation/ui/sign/widgets/sign.dart';
 import 'package:polygonid_flutter_sdk_example/utils/custom_button_style.dart';
 import 'package:polygonid_flutter_sdk_example/utils/custom_colors.dart';
 import 'package:polygonid_flutter_sdk_example/utils/custom_strings.dart';
@@ -52,29 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 300),
                       _buildLogo(),
+                      _buildIdentityActionButton(),
                       const SizedBox(height: 13),
-                      _buildDescription(),
-                      const SizedBox(height: 24),
                       _buildProgress(),
                       const SizedBox(height: 24),
-                      _buildIdentifierSection(),
-                      const SizedBox(height: 24),
-                      _buildErrorSection(),
-                      const SizedBox(height: 24),
-                      _buildFeaturesSection(),
-                      const SizedBox(height: 48),
                     ],
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Stack(
-                  children: [
-                    _buildIdentityActionButton(),
-                  ],
                 ),
               ),
             ],
@@ -84,31 +65,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ///
   void _initGetIdentifier() {
     _bloc.add(const GetIdentifierHomeEvent());
   }
 
-  ///
   Widget _buildIdentityActionButton() {
     return Align(
       alignment: Alignment.center,
-      child: BlocBuilder(
+      child: BlocBuilder<HomeBloc, HomeState>(
         bloc: _bloc,
         builder: (BuildContext context, HomeState state) {
           bool enabled = state is! LoadingDataHomeState;
           bool showCreateIdentityButton =
               state.identifier == null || state.identifier!.isEmpty;
 
-          return showCreateIdentityButton
-              ? _buildCreateIdentityButton(enabled)
-              : _buildRemoveIdentityButton(enabled);
+          if (showCreateIdentityButton) {
+            return _buildCreateIdentityButton(enabled);
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushNamed(context, Routes.homeChatPath);
+            });
+            return Container();  // Return an empty Container to satisfy the builder's return type
+          }
         },
       ),
     );
   }
 
-  ///
   Widget _buildCreateIdentityButton(bool enabled) {
     return AbsorbPointer(
       absorbing: !enabled,
@@ -131,32 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ///
-  Widget _buildRemoveIdentityButton(bool enabled) {
-    return AbsorbPointer(
-      absorbing: !enabled,
-      child: ElevatedButton(
-        key: CustomWidgetsKeys.homeScreenButtonRemoveIdentity,
-        onPressed: () {
-          _bloc.add(const HomeEvent.removeIdentity());
-        },
-        style: enabled
-            ? CustomButtonStyle.outlinedPrimaryButtonStyle
-            : CustomButtonStyle.disabledPrimaryButtonStyle,
-        child: FittedBox(
-          child: Text(
-            CustomStrings.homeButtonRemoveIdentityCTA,
-            textAlign: TextAlign.center,
-            style: CustomTextStyles.primaryButtonTextStyle.copyWith(
-              color: CustomColors.primaryButton,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  ///
   Widget _buildLogo() {
     return SvgPicture.asset(
       ImageResources.logo,
@@ -164,21 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ///
-  Widget _buildDescription() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24),
-      child: Text(
-        CustomStrings.homeDescription,
-        textAlign: TextAlign.center,
-        style: CustomTextStyles.descriptionTextStyle,
-      ),
-    );
-  }
-
-  ///
   Widget _buildProgress() {
-    return BlocBuilder(
+    return BlocBuilder<HomeBloc, HomeState>(
       bloc: _bloc,
       builder: (BuildContext context, HomeState state) {
         if (state is! LoadingDataHomeState) return const SizedBox.shrink();
@@ -267,19 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ///
-  Widget _buildSignMessageSection() {
-    return BlocBuilder(
-      bloc: _bloc,
-      builder: (BuildContext context, HomeState state) {
-        if (state.identifier == null || state.identifier!.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        return SignWidget();
-      },
-      buildWhen: (_, currentState) => currentState is LoadedIdentifierHomeState,
-    );
-  }
 
   ///
   Widget _buildFeaturesSection() {
