@@ -6,11 +6,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: WhiZper
-    network: sepolia
+    network: arbitrum-sepolia
     source:
-      address: "0x230d89fE5035c3860fc4d04cD32cB64A3b16fE90"
+      address: "0x83534E9D36076D04bD404c1173e8B4A5D0D42325"
       abi: WhiZper
-      startBlock: 6303718
+      startBlock: 63638948
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

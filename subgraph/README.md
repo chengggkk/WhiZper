@@ -6,7 +6,9 @@
 
 ## Endpoints
 1. sepolia: https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.3
-2. arbitrum-sepolia: https://api.studio.thegraph.com/query/82798/whizper-arbitrum-sepolia/v0.0.2
+2. arbitrum-sepolia: https://api.studio.thegraph.com/query/82798/whizper-arbitrum-sepolia/v0.0.3
+3. scroll-sepolia: 
+4. matic:
 
 
 ## Endpoints (non ZK)
