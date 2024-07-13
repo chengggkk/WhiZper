@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart';
 import 'package:polygonid_flutter_sdk_example/src/data/secure_storage.dart';
@@ -91,7 +92,7 @@ class _HomeChatState extends State<HomeChat> {
       userGroups = [];
       BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
       final response = await request(
-          "{groups(where:{userId:\"${polygonIdBigInt.toString()}\"}){userId groupId groupName}}");
+          "{groups(orderBy: blockTimestamp where:{userId:\"${polygonIdBigInt.toString()}\"}){userId groupId groupName}}");
       final logs = response['data']['groups'];
 
       for (var log in logs) {
@@ -123,77 +124,371 @@ class _HomeChatState extends State<HomeChat> {
     }
   }
 
+  final _addGroupFormKey = GlobalKey<FormState>();
+  final _joinGroupFormKey = GlobalKey<FormState>();
+  final _groupIdController = TextEditingController();
+
+  String _addGroupName = '';
+  String? _joinGroupId = '';
+  BigInt polygonIDB = BigInt.zero;
+
+  // Mock ZK proof
+  BigInt requestId = BigInt.parse("1");
+  List<BigInt> inputs = [
+    BigInt.parse('1'),
+    BigInt.parse(
+        '23148936466334350744548790012294489365207440754509988986684797708370051073'),
+    BigInt.parse(
+        '1496222740463292783938163206931059379817846775593932664024082849882751356658'),
+    BigInt.parse(
+        '2943483356559152311923412925436024635269538717812859789851139200242297094'),
+    BigInt.parse('32'),
+    BigInt.parse('583091486781463398742321306787801699791102451699'),
+    BigInt.parse(
+        '2330632222887470777740058486814238715476391492444368442359814550649181604485'),
+    BigInt.parse(
+        '21933750065545691586450392143787330185992517860945727248803138245838110721'),
+    BigInt.parse('1'),
+    BigInt.parse(
+        '2943483356559152311923412925436024635269538717812859789851139200242297094'),
+    BigInt.parse('1642074362')
+  ];
+  List<BigInt> a = [
+    BigInt.parse(
+        '1586737020434671186479469693201682903767348489278928918437644869362426285987'),
+    BigInt.parse(
+        '10368374578954982886026700668192458272023628059221185517094289432313391574346')
+  ];
+  List<List<BigInt>> b = [
+    [
+      BigInt.parse(
+          '10467634573017180218197884581733108252303484275914626793162330699221056049997'),
+      BigInt.parse(
+          '8209584930734522176349491274051519385730056242274029221348202709658022380255')
+    ],
+    [
+      BigInt.parse(
+          '16780462512570391766527074671395013717949680440025828249250261266320709865031'),
+      BigInt.parse(
+          '8727203460568364282837439956284542723424467542192739359133672824842743578575')
+    ]
+  ];
+  List<BigInt> c = [
+    BigInt.parse(
+        '11215761237716692384931356337281938111805620146858403764487216970162196454846'),
+    BigInt.parse(
+        '4563515138436312174368382548605579502301781805108297754551533822937265670041')
+  ];
+
+  @override
+  void dispose() {
+    _groupIdController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createGroup(polygonId, String groupName) async {
+    try {
+      setState(() => _isLoading = true);
+      await dotenv.load(fileName: ".env");
+      String apiUrl = dotenv.env['PROVIDER']!;
+      var httpClient = Client();
+      var ethClient = Web3Client(apiUrl, httpClient);
+
+      await dotenv.load(fileName: ".env");
+      String privateKey =
+          dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
+
+      Credentials credentials = EthPrivateKey.fromHex("0x" + privateKey);
+      final contract = await loadContract();
+      final function = contract.function('createGroup');
+
+      BigInt polygonIdBigInt = BigInt.parse(polygonId, radix: 16);
+      polygonIDB = polygonIdBigInt;
+
+      await ethClient.sendTransaction(
+        credentials,
+        Transaction.callContract(
+          contract: contract,
+          function: function,
+          parameters: [
+            requestId,
+            inputs,
+            a,
+            b,
+            c,
+            polygonIdBigInt,
+            groupName
+          ], // Ensure this matches the smart contract's expected types
+        ),
+        chainId: 11155111,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Group created: $groupName')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create group: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _submitAddGroupForm() async {
+    if (_addGroupFormKey.currentState!.validate()) {
+      _addGroupFormKey.currentState!.save();
+      await _createGroup(_polygonId, _addGroupName);
+      _addGroupFormKey.currentState!.reset();
+    }
+  }
+
+  Future<void> _joinGroup(String groupId) async {
+    try {
+      setState(() => _isLoading = true);
+      await dotenv.load(fileName: ".env");
+      String apiUrl = dotenv.env['PROVIDER']!;
+      var httpClient = Client();
+      var ethClient = Web3Client(apiUrl, httpClient);
+
+      await dotenv.load(fileName: ".env");
+      String privateKey =
+          dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
+
+      Credentials credentials = EthPrivateKey.fromHex("0x" + privateKey);
+      final contract = await loadContract();
+      final function = contract.function('joinGroup');
+
+      BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
+      polygonIDB = polygonIdBigInt;
+
+      await ethClient.sendTransaction(
+        credentials,
+        Transaction.callContract(
+          contract: contract,
+          function: function,
+          parameters: [
+            requestId,
+            inputs,
+            a,
+            b,
+            c,
+            polygonIdBigInt,
+            BigInt.parse(groupId)
+          ], // Ensure this matches the smart contract's expected types
+        ),
+        chainId: 11155111,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Joined group: $groupId')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to join group: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _submitJoinGroupForm() async {
+    if (_joinGroupFormKey.currentState!.validate()) {
+      _joinGroupFormKey.currentState!.save();
+      await _joinGroup(_joinGroupId!);
+      _joinGroupFormKey.currentState!.reset();
+    }
+  }
+
+  Widget _buildAddGroupForm() {
+    return Padding(
+      padding: EdgeInsets.all(50.0),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Create Group Form
+            Form(
+              key: _addGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Create Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Group Name'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group name';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _addGroupName = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Create Group'),
+                    onPressed: _isLoading ? null : _submitAddGroupForm,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.0), // Spacer between forms
+            // Join Group Form
+            Form(
+              key: _joinGroupFormKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Join Group',
+                    style:
+                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                  ),
+                  TextFormField(
+                    controller: _groupIdController,
+                    decoration: InputDecoration(labelText: 'Group ID'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group ID';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _joinGroupId = value!;
+                    },
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    child: Text('Join Group'),
+                    onPressed: _isLoading ? null : _submitJoinGroupForm,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('WhiZper'),
+        title: Text('WhiZper $_polygonId'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              await SecureStorage.delete(key: 'privateKey');
+              Navigator.pushNamed(context, Routes.homePath);
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.qr_code_scanner),
+            onPressed: () {
+              // Implement QR code scan functionality here
+              // For example: widget._bloc.add(const AuthEvent.clickScanQrCode());
+            },
+          ),
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
-              Navigator.pushNamed(context, Routes.addAndJoinPath);
+              await showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return _buildAddGroupForm();
+                },
+              );
             },
           ),
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          Text(_isLoading ? 'Loading...' : ''),
-          Expanded(
-            child: _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : _errorMessage != null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Error: $_errorMessage'),
-                          SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: _loadUserGroups,
-                            child: Text('Retry'),
-                          ),
-                        ],
-                      )
-                    : userGroups.isEmpty
+          // Background image
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bg.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Main content
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_isLoading ? 'Loading...' : ''),
+              Expanded(
+                child: _isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
                         ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('No groups found.'),
+                              Text('Error: $_errorMessage'),
                               SizedBox(height: 20),
                               ElevatedButton(
-                                onPressed: () async {
-                                  await _loadIdentity();
-                                  await _loadUserGroups();
-                                },
-                                child: Text('Search Groups'),
+                                onPressed: _loadUserGroups,
+                                child: Text('Retry'),
                               ),
                             ],
                           )
-                        : ListView.separated(
-                            itemCount: _groups.length,
-                            separatorBuilder: (context, index) => Divider(),
-                            itemBuilder: (context, index) {
-                              final group = _groups[index];
-                              return ListTile(
-                                title: Center(child: Text(group["groupName"]!)),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routes.chatPath,
-                                    arguments: Chat_arg(
-                                      userId: group["userId"]!,
-                                      groupId: group["groupId"]!,
-                                      groupName: group["groupName"] ??
-                                          "Default Group Name",
+                        : userGroups.isEmpty
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('No groups found.'),
+                                  SizedBox(height: 20),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      await _loadIdentity();
+                                      await _loadUserGroups();
+                                    },
+                                    child: Text('Search Groups'),
+                                  ),
+                                ],
+                              )
+                            : ListView.separated(
+                                itemCount: _groups.length,
+                                separatorBuilder: (context, index) => Divider(),
+                                itemBuilder: (context, index) {
+                                  final group = _groups[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routes.chatPath,
+                                        arguments: Chat_arg(
+                                          userId: group["userId"]!,
+                                          groupId: group["groupId"]!,
+                                          groupName: group["groupName"] ??
+                                              "Default Group Name",
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                      ),
+                                      child: ListTile(
+                                        title: Center(
+                                            child: Text(group["groupName"]!)),
+                                      ),
                                     ),
                                   );
                                 },
-                              );
-                            },
-                          ),
+                              ),
+              ),
+            ],
           ),
         ],
       ),
