@@ -34,6 +34,7 @@ Supporting networks
 -   jenkins
 -   scroll
 -   linea
+-   base-sepolia
 
 ## ZK deployment v2
 
@@ -43,6 +44,7 @@ Supporting networks
 4. jenkins: `0x0c635B4cBAb677ba09C5305c977590262356fC24`
 5. zircuit: `0x0c635B4cBAb677ba09C5305c977590262356fC24`
 6. scroll: `0xE95210e97F80cA87FE07F34e3817A4B954672534`
+7. base-sepolia: `0xe855A35C117b8f1328BdC91d27a3aEdA1E61B392`
 
 ## ZK deployment
 

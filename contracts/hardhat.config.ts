@@ -78,6 +78,12 @@ const config: HardhatUserConfig = {
       accounts: [
         `${process.env.PRIVATE_KEY}`
       ]
+    },
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
+      accounts: [
+        `${process.env.PRIVATE_KEY}`
+      ]
     }
   }
 };

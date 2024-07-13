@@ -1,14 +1,20 @@
 {
-  "sepolia": {
-    "WhiZper": {
-      "address": "0x230d89fE5035c3860fc4d04cD32cB64A3b16fE90",
-      "startBlock": 6303718
+    "sepolia": {
+        "WhiZper": {
+            "address": "0x230d89fE5035c3860fc4d04cD32cB64A3b16fE90",
+            "startBlock": 6303718
+        }
+    },
+    "arbitrum-sepolia": {
+        "WhiZper": {
+            "address": "0xE9956Ab4a5338B8A9b61f033700219fD6FbfCd32",
+            "startBlock": 63503707
+        }
+    },
+    "base-sepolia": {
+        "WhiZper": {
+            "address": "0xe855A35C117b8f1328BdC91d27a3aEdA1E61B392",
+            "startBlock": 12571050
+        }
     }
-  },
-  "arbitrum-sepolia": {
-    "WhiZper": {
-      "address": "0xE9956Ab4a5338B8A9b61f033700219fD6FbfCd32",
-      "startBlock": 63503707
-    }
-  }
 }

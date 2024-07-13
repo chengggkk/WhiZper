@@ -10,3 +10,4 @@ export const chainIdDefaultIdTypeMap = new Map()
   .set(421614, "0x0212") // arbitrum
   .set(1798, "0x0212") // jenkins
   .set(534351, "0x0212") // scroll
+  .set(84532, "0x0212") // base sepolia
