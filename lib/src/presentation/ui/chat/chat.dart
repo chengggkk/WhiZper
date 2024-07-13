@@ -133,7 +133,7 @@ class _ChatState extends State<Chat> {
 
   Future<Map<String, dynamic>> request(String query) async {
     final url = Uri.parse(
-        'https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.3');
+        'https://api.studio.thegraph.com/query/82798/whizper-arbitrum-sepolia/v0.0.3');
 
     final response = await post(
       url,
@@ -228,7 +228,7 @@ class _ChatState extends State<Chat> {
             message
           ],
         ),
-        chainId: 11155111,
+        chainId: 421614,
       );
       await _loadMessages();
     } catch (e) {
