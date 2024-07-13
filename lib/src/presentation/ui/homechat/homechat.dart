@@ -127,6 +127,7 @@ class _HomeChatState extends State<HomeChat> {
   final _joinGroupFormKey = GlobalKey<FormState>();
   final _groupIdController = TextEditingController();
 
+
   String _addGroupName = '';
   String? _joinGroupId = '';
   BigInt polygonIDB = BigInt.zero;
@@ -247,35 +248,40 @@ class _HomeChatState extends State<HomeChat> {
 
 
 Widget _buildAddGroupForm() {
-    return Form(
+  return Padding(
+    padding: EdgeInsets.all(50.0),
+    child: Center(
+    child: Form(
       key: _addGroupFormKey,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Add Group',
-            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          ),
-          TextFormField(
-            decoration: InputDecoration(labelText: 'Group Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a group name';
-              }
-              return null;
-            },
-            onSaved: (value) {
-              _addGroupName = value!;
-            },
-          ),
-          SizedBox(height: 8.0),
-          ElevatedButton(
-            child: Text('Add Group'),
-            onPressed: _isLoading ? null : _submitAddGroupForm,
-          ),
-        ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+        'Create Group',
+        style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+        ),
+        TextFormField(
+        decoration: InputDecoration(labelText: 'Group Name'),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+          return 'Please enter a group name';
+          }
+          return null;
+        },
+        onSaved: (value) {
+          _addGroupName = value!;
+        },
+        ),
+        SizedBox(height: 8.0),
+        ElevatedButton(
+        child: Text('Create Group'),
+        onPressed: _isLoading ? null : _submitAddGroupForm,
+        ),
+      ],
       ),
-    );
+    ),
+    ),
+  );
   }
 
   @override
@@ -285,24 +291,13 @@ Widget _buildAddGroupForm() {
       automaticallyImplyLeading: false,
       title: const Text('WhiZper'),
       actions: [
-
-        IconButton(
-            icon: Icon(Icons.qr_code_scanner),
-            onPressed: () {
-              // Implement QR code scan functionality here
-              // For example: widget._bloc.add(const AuthEvent.clickScanQrCode());
-            },
-          ),
         IconButton(
           icon: Icon(Icons.add),
             onPressed: () async {
             await showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {
-              return Padding(
-                padding: EdgeInsets.all(50.0),
-                child: _buildAddGroupForm(),
-              );
+              return _buildAddGroupForm();
               },
             );
             },
