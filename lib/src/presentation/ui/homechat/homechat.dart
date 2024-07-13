@@ -289,6 +289,7 @@ class _HomeChatState extends State<HomeChat> {
       );
     } finally {
       setState(() => _isLoading = false);
+      await _loadUserGroups(); // Reload user groups after joining a group
     }
   }
 
@@ -382,7 +383,7 @@ class _HomeChatState extends State<HomeChat> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('WhiZper $_polygonId'),
+        title: Text('WhiZper'),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
@@ -403,8 +404,18 @@ class _HomeChatState extends State<HomeChat> {
             onPressed: () async {
               await showModalBottomSheet(
                 context: context,
+                isScrollControlled: true, // Add this line
                 builder: (BuildContext context) {
-                  return _buildAddGroupForm();
+                  return SingleChildScrollView(
+                    // Wrap with SingleChildScrollView
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context)
+                              .viewInsets
+                              .bottom), // Add padding equal to the keyboard height
+                      child: _buildAddGroupForm(),
+                    ),
+                  );
                 },
               );
             },
@@ -446,14 +457,21 @@ class _HomeChatState extends State<HomeChat> {
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('No groups found.'),
-                                  SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      await _loadIdentity();
-                                      await _loadUserGroups();
-                                    },
-                                    child: Text('Search Groups'),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 150),
+                                    child: Column(
+                                      children: [
+                                        Text('No groups found.'),
+                                        SizedBox(height: 20),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            await _loadIdentity();
+                                            await _loadUserGroups();
+                                          },
+                                          child: Text('Search Groups'),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               )
