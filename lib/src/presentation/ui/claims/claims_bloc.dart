@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:polygonid_flutter_sdk/common/data/exceptions/network_exceptions.dart';
 import 'package:polygonid_flutter_sdk/common/domain/domain_constants.dart';
 import 'package:polygonid_flutter_sdk/common/domain/entities/chain_config_entity.dart';
 import 'package:polygonid_flutter_sdk/common/domain/entities/filter_entity.dart';
@@ -86,10 +87,15 @@ class ClaimsBloc extends Bloc<ClaimsEvent, ClaimsState> {
       if (claimList.isNotEmpty) {
         add(const GetClaimsEvent());
       }
+      } on NetworkException catch (error) {
+        emit(ClaimsState.error("network exception: ${error.errorMessage}"));
+      
+      
     } catch (exception) {
-      emit(const ClaimsState.error(CustomStrings.iden3messageGenericError));
+      emit(ClaimsState.error(exception.toString()));
     }
   }
+
 
   ///
   Future<void> _getClaims(
