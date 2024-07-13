@@ -12,6 +12,11 @@ import 'package:polygonid_flutter_sdk_example/src/presentation/ui/sign/widgets/s
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/splash/widgets/splash.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/homechat/homechat.dart';
 import 'package:polygonid_flutter_sdk_example/src/presentation/ui/addandjoin/addandjoin.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/chat/chat.dart';
+import 'package:polygonid_flutter_sdk_example/src/presentation/ui/chat/chat_arg.dart';
+
+
+
 
 class Routes {
   static const String initialPath = "/";
@@ -28,6 +33,7 @@ class Routes {
   static const String restoreIdentityPath = "/restore_identity";
   static const String homeChatPath = "/homechat";
   static const String addAndJoinPath = "/addandjoin";
+  static const String chatPath = "/chat";
 
 
   ///
@@ -46,6 +52,7 @@ class Routes {
       restoreIdentityPath: _restoreIdentityRoute(),
       homeChatPath: _homeChatRoute(),
       addAndJoinPath: _addAndJoinRoute(),
+      chatPath: chatRoute(),
     };
   }
 
@@ -111,4 +118,12 @@ class Routes {
   static WidgetBuilder _addAndJoinRoute() {
     return (BuildContext context) => AddAndJoin();
   }
+
+  static WidgetBuilder chatRoute() {
+    return (BuildContext context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Chat_arg;
+      return Chat(chatArguments: args);
+    };
+  }
+
 }

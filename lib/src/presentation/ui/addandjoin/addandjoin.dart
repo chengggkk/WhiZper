@@ -54,7 +54,7 @@ Future<DeployedContract> loadContract() async {
   }
 
   final contract = DeployedContract(
-    ContractAbi.fromJson(abi, 'Pulongggon'),
+    ContractAbi.fromJson(abi, 'WhiZper'),
     EthereumAddress.fromHex(contractAddress),
   );
 
