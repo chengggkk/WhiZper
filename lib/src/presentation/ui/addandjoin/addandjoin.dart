@@ -24,12 +24,59 @@ class _AddAndJoinState extends State<AddAndJoin> {
 
   late final HomeBloc _bloc;
 
-
   String _addGroupName = '';
   String? _joinGroupId = '';
   bool _isLoading = false;
   String? _polygonId;
   BigInt polygonIDB = BigInt.zero;
+
+  // Mock ZK proof
+  BigInt requestId = BigInt.parse("1");
+  List<BigInt> inputs = [
+    BigInt.parse('1'),
+    BigInt.parse(
+        '23148936466334350744548790012294489365207440754509988986684797708370051073'),
+    BigInt.parse(
+        '1496222740463292783938163206931059379817846775593932664024082849882751356658'),
+    BigInt.parse(
+        '2943483356559152311923412925436024635269538717812859789851139200242297094'),
+    BigInt.parse('32'),
+    BigInt.parse('583091486781463398742321306787801699791102451699'),
+    BigInt.parse(
+        '2330632222887470777740058486814238715476391492444368442359814550649181604485'),
+    BigInt.parse(
+        '21933750065545691586450392143787330185992517860945727248803138245838110721'),
+    BigInt.parse('1'),
+    BigInt.parse(
+        '2943483356559152311923412925436024635269538717812859789851139200242297094'),
+    BigInt.parse('1642074362')
+  ];
+  List<BigInt> a = [
+    BigInt.parse(
+        '1586737020434671186479469693201682903767348489278928918437644869362426285987'),
+    BigInt.parse(
+        '10368374578954982886026700668192458272023628059221185517094289432313391574346')
+  ];
+  List<List<BigInt>> b = [
+    [
+      BigInt.parse(
+          '10467634573017180218197884581733108252303484275914626793162330699221056049997'),
+      BigInt.parse(
+          '8209584930734522176349491274051519385730056242274029221348202709658022380255')
+    ],
+    [
+      BigInt.parse(
+          '16780462512570391766527074671395013717949680440025828249250261266320709865031'),
+      BigInt.parse(
+          '8727203460568364282837439956284542723424467542192739359133672824842743578575')
+    ]
+  ];
+  List<BigInt> c = [
+    BigInt.parse(
+        '11215761237716692384931356337281938111805620146858403764487216970162196454846'),
+    BigInt.parse(
+        '4563515138436312174368382548605579502301781805108297754551533822937265670041')
+  ];
 
   @override
   void initState() {
@@ -54,23 +101,23 @@ class _AddAndJoinState extends State<AddAndJoin> {
     }
   }
 
-Future<DeployedContract> loadContract() async {
-  String abi = await rootBundle.loadString('assets/abi.json');
-  await dotenv.load(fileName: ".env");
-  String? contractAddress = dotenv.env['CONTRACT_ADDRESS'];
-  
+  Future<DeployedContract> loadContract() async {
+    String abi = await rootBundle.loadString('assets/abi.json');
+    await dotenv.load(fileName: ".env");
+    String? contractAddress = dotenv.env['CONTRACT_ADDRESS'];
 
-  if (contractAddress == null) {
-    throw Exception('CONTRACT_ADDRESS not found in .env file');
+    if (contractAddress == null) {
+      throw Exception('CONTRACT_ADDRESS not found in .env file');
+    }
+
+    final contract = DeployedContract(
+      ContractAbi.fromJson(abi, 'WhiZper'),
+      EthereumAddress.fromHex(contractAddress),
+    );
+
+    return contract;
   }
 
-  final contract = DeployedContract(
-    ContractAbi.fromJson(abi, 'WhiZper'),
-    EthereumAddress.fromHex(contractAddress),
-  );
-
-  return contract;
-}
   Future<void> _createGroup(polygonId, String groupName) async {
     try {
       setState(() => _isLoading = true);
@@ -80,7 +127,8 @@ Future<DeployedContract> loadContract() async {
       var ethClient = Web3Client(apiUrl, httpClient);
 
       await dotenv.load(fileName: ".env");
-      String privateKey = dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
+      String privateKey =
+          dotenv.env['PRIVATE_KEY']!; // Define the privateKey variable
 
       Credentials credentials = EthPrivateKey.fromHex("0x" + privateKey);
       final contract = await loadContract();
@@ -95,6 +143,11 @@ Future<DeployedContract> loadContract() async {
           contract: contract,
           function: function,
           parameters: [
+            requestId,
+            inputs,
+            a,
+            b,
+            c,
             polygonIdBigInt,
             groupName
           ], // Ensure this matches the smart contract's expected types
@@ -140,7 +193,6 @@ Future<DeployedContract> loadContract() async {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,7 +209,6 @@ Future<DeployedContract> loadContract() async {
                     _buildAddGroupForm(),
                     SizedBox(height: 16.0),
                     _buildAuthenticateFeatureCard(),
-                    
                   ],
                 ),
               ),

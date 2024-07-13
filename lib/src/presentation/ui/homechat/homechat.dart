@@ -56,7 +56,7 @@ class _HomeChatState extends State<HomeChat> {
 
   Future<Map<String, dynamic>> request(String query) async {
     final url = Uri.parse(
-        'https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.1');
+        'https://api.studio.thegraph.com/query/82798/whizper-sepolia/v0.0.3');
 
     final response = await post(
       url,

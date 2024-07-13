@@ -12,6 +12,9 @@ npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/WhiZper.ts
 ```
 
+## ZK deployment v2
+1. sepolia: `0x230d89fE5035c3860fc4d04cD32cB64A3b16fE90`
+
 ## ZK deployment
 1. sepolia: `0x0d72F012CE41ebCd5D148bf3b30Bf54379b799E7`
 2. arbitrum-sepolia: `0xE9956Ab4a5338B8A9b61f033700219fD6FbfCd32`
