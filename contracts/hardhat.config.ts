@@ -60,6 +60,30 @@ const config: HardhatUserConfig = {
       accounts: [
         `${process.env.PRIVATE_KEY}`
       ]
+    },
+    alfajores: {
+      url: `https://celo-alfajores.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [
+        `${process.env.PRIVATE_KEY}`
+      ]
+    },
+    linea: {
+      url: `https://linea-sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [
+        `${process.env.PRIVATE_KEY}`
+      ]
+    },
+    polygon: {
+      url: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [
+        `${process.env.PRIVATE_KEY}`
+      ]
+    },
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
+      accounts: [
+        `${process.env.PRIVATE_KEY}`
+      ]
     }
   }
 };
