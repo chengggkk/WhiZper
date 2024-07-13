@@ -166,9 +166,11 @@ class _ChatState extends State<Chat> {
       final messageEvent = contract.event("Message");
 
       final response = await request(
-          "{messages(where: { groupId: $groupId }){userId groupId message}}");
+          "{messages(orderBy: blockTimestamp where: { groupId: $groupId }){userId groupId message}}");
 
       final logs = response['data']['messages'];
+
+      messages = [];
 
       for (var log in logs) {
         String groupId = log["groupId"];
