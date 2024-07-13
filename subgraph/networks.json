@@ -1,8 +1,8 @@
 {
   "sepolia": {
     "WhiZper": {
-      "address": "0x0d72F012CE41ebCd5D148bf3b30Bf54379b799E7",
-      "startBlock": 6301663
+      "address": "0x230d89fE5035c3860fc4d04cD32cB64A3b16fE90",
+      "startBlock": 6303718
     }
   },
   "arbitrum-sepolia": {
