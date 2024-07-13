@@ -91,7 +91,7 @@ class _HomeChatState extends State<HomeChat> {
       userGroups = [];
       BigInt polygonIdBigInt = BigInt.parse(_polygonId!, radix: 16);
       final response = await request(
-          "{groups(where:{userId:\"${polygonIdBigInt.toString()}\"}){userId groupId groupName}}");
+          "{groups(orderBy: blockTimestamp where:{userId:\"${polygonIdBigInt.toString()}\"}){userId groupId groupName}}");
       final logs = response['data']['groups'];
 
       for (var log in logs) {
