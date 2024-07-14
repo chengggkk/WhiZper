@@ -385,48 +385,46 @@ class _HomeChatState extends State<HomeChat> {
         automaticallyImplyLeading: false,
         title: Text('WhiZper'),
         actions: [
-            IconButton(
+          IconButton(
             onPressed: () {
               _loadUserGroups(); // Call the loadUserGroups function
             },
             icon: Icon(Icons.refresh), // Add the refresh icon
-            ),
-            IconButton(
+          ),
+          IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               await SecureStorage.delete(key: 'privateKey');
               Navigator.pushNamed(context, Routes.homePath);
             },
-            ),
-            IconButton(
+          ),
+          IconButton(
             icon: Icon(Icons.qr_code_scanner),
             onPressed: () {
-              // Implement QR code scan functionality here
-              // For example: widget._bloc.add(const AuthEvent.clickScanQrCode());
+              Navigator.pushNamed(context, Routes.qrCodeScannerPath);
             },
-            ),
-            IconButton(
+          ),
+          IconButton(
             icon: Icon(Icons.add),
             onPressed: () async {
               await showModalBottomSheet(
-              context: context,
-              isScrollControlled: true, // Add this line
-              builder: (BuildContext context) {
-                return SingleChildScrollView(
-                // Wrap with SingleChildScrollView
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context)
-                      .viewInsets
-                      .bottom), // Add padding equal to the keyboard height
-                  child: _buildAddGroupForm(),
-                ),
-                );
-              },
+                context: context,
+                isScrollControlled: true, // Add this line
+                builder: (BuildContext context) {
+                  return SingleChildScrollView(
+                    // Wrap with SingleChildScrollView
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context)
+                              .viewInsets
+                              .bottom), // Add padding equal to the keyboard height
+                      child: _buildAddGroupForm(),
+                    ),
+                  );
+                },
               );
             },
-            ),
-          
+          ),
         ],
       ),
       body: Stack(
