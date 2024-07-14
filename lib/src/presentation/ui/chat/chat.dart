@@ -170,6 +170,8 @@ class _ChatState extends State<Chat> {
 
       final logs = response['data']['messages'];
 
+      messages = [];
+
       for (var log in logs) {
         String groupId = log["groupId"];
         String message = log["message"];
